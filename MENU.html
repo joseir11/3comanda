@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>COMANDA DIGITAL - JP HOUSE & BEER</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#111111">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Roboto', Arial, sans-serif;
+    margin: 0;
+    background: #f6f6f6;
+    text-transform: uppercase;
+  }
+  header {
+    background: #111;
+    color: #fff;
+    padding: 15px;
+    text-align: center;
+    font-size: 22px;
+    position: relative;
+  }
+  #admin-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.2;
+    transition: opacity 0.3s;
+  }
+  #admin-icon:hover { opacity: 1; }
+  .tabs {
+    display: flex;
+  }
+  .tabs button {
+    flex: 1;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    background: #ddd;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .tabs button.active { background: #bbb; font-weight: bold; }
+  .tab-content {
+    display: none;
+    padding: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+  }
+  .product {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .product:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  }
+  .product-info {
+    max-width: 60%;
+  }
+  .product-info strong { display: block; margin-bottom: 5px; font-size: 16px; }
+  .product-info .price { font-size: 14px; margin-bottom: 0; text-align: right; }
+  .product-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: nowrap;
+  }
+  .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .qty-control button {
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .qty-control span { min-width: 24px; text-align: center; font-size: 16px; }
+  button.add-cart-btn {
+    background: #111;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+    transition: background 0.3s;
+  }
+  button.add-cart-btn:hover { background: #333; }
+  button.add-cart-btn svg { width: 20px; height: 20px; fill: white; }
+  #comanda-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #111;
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  /* Modal comum */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .modal.show { display: flex; opacity: 1; }
+  .modal-content {
+    background: white;
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+    border-radius: 10px;
+    max-height: 90%;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-content .close-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  #receipt-content {
+    font-family: monospace;
+    white-space: pre-line;
+    border: 1px dashed #000;
+    padding: 10px;
+    background: #fff;
+    margin-bottom: 10px;
+  }
+  #comanda-list, #fechar-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+  .comanda-item, .fechar-item { display: flex; justify-content: space-between; font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+  .comanda-item span:first-child, .fechar-item span:first-child { font-weight: 600; }
+  .fechar-item span:last-child { min-width: 90px; text-align: right; }
+  #fechar-total { margin-top: 15px; font-weight: bold; font-size: 18px; text-align: right; }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: #111;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.5s;
+    z-index: 20;
+  }
+  #toast.show { opacity: 1; }
+
+  /* Responsividade */
+  @media (max-width: 600px) {
+    .tabs button { font-size: 16px; padding: 10px; }
+    .qty-control button { width: 28px; height: 28px; font-size: 18px; }
+    button.add-cart-btn { font-size: 14px; padding: 7px 12px; }
+    #comanda-btn { padding: 10px 14px; font-size: 16px; }
+    .product-info { max-width: 100%; margin-bottom: 10px; }
+    .product { flex-wrap: wrap; gap: 10px; }
+  }
+
+  /* Admin */
+  .admin-product { border-bottom: 1px solid #ccc; padding: 5px 0; display: flex; justify-content: space-between; align-items: center; }
+  .admin-product span { flex: 1; }
+  .admin-product button { margin-left: 5px; }
+  #comanda-modal button, #fechar-modal button, #admin-modal button, #receipt-modal button { margin-right: 8px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<header>
+  🍔 COMANDA DIGITAL - JP HOUSE & BEER
+  <span id="admin-icon" title="CADASTRO DE PRODUTOS">⚙️</span>
+</header>
+
+<div class="tabs">
+  <button onclick="openTab('sanduiches')" class="active">SANDUÍCHES</button>
+  <button onclick="openTab('acompanhamentos')">ACOMPANHAMENTOS</button>
+  <button onclick="openTab('bebidas')">BEBIDAS</button>
+</div>
+
+<div id="sanduiches" class="tab-content" style="display: grid;"></div>
+<div id="acompanhamentos" class="tab-content"></div>
+<div id="bebidas" class="tab-content"></div>
+
+<div id="comanda-btn" onclick="openComanda()">📋 COMANDA (<span id="comanda-count">0</span>)</div>
+
+<div id="toast"></div>
+
+<div id="comanda-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeComanda()">✖️</span>
+    <h3>📋 COMANDA</h3>
+    <div id="comanda-list">NENHUM ITEM NA COMANDA.</div>
+    <button onclick="fecharComanda()" disabled id="btn-fechar-comanda">FECHAR COMANDA</button>
+    <button onclick="limparComanda()" id="btn-limpar-comanda">LIMPAR COMANDA</button>
+  </div>
+</div>
+
+<div id="fechar-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeFechar()">✖️</span>
+    <h3>🧾 SEU PEDIDO</h3>
+    <div id="fechar-list"></div>
+    <div id="fechar-total"></div>
+    <br />
+    <button onclick="showReceipt()">MOSTRAR CUPOM</button>
+  </div>
+</div>
+
+<div id="receipt-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeReceipt()">✖️</span>
+    <h3>🧾 CUPOM</h3>
+    <div id="receipt-content"></div>
+  </div>
+</div>
+
+<div id="admin-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeAdmin()">✖️</span>
+    <h3>CADASTRAR PRODUTO</h3>
+    <label>NOME:</label>
+    <input id="p-name" style="width: 100%" /><br /><br />
+    <label>PREÇO:</label>
+    <input id="p-price" type="number" step="0.01" style="width: 100%" /><br /><br />
+    <label>CATEGORIA:</label>
+    <select id="p-category" style="width: 100%">
+      <option value="sanduiches">SANDUÍCHE</option>
+      <option value="acompanhamentos">ACOMPANHAMENTO</option>
+      <option value="bebidas">BEBIDAS</option>
+    </select>
+    <br /><br />
+    <button onclick="saveProduct()">SALVAR</button>
+
+    <h3>PRODUTOS CADASTRADOS</h3>
+    <div id="admin-list"></div>
+  </div>
+</div>
+
+<script>
+// ================= LISTA DE PRODUTOS INICIAIS (EMBUTIDA) =================
+// Esta lista foi gerada com base na sua imagem (image_692aa4.png)
+const INITIAL_PRODUCTS = [
+    { name: "SERTANEJO MODINHA", price: 4.99, category: "sanduiches" },
+    { name: "COSTELA DESFIADA", price: 5.49, category: "sanduiches" },
+    { name: "BATATA FRITA - 100G", price: 1.99, category: "acompanhamentos" },
+    { name: "MACAXEIRA FRITA - 100G", price: 1.99, category: "acompanhamentos" },
+    { name: "COCA COLA ZERO - 350ML", price: 2.49, category: "bebidas" },
+    { name: "GUARANA ZERO - 350ML", price: 2.49, category: "bebidas" },
+];
+
+// Carrega os produtos: Verifica se há produtos válidos no localStorage. Se não houver (ou se estiver vazio), usa a lista INITIAL_PRODUCTS.
+let storedProducts = JSON.parse(localStorage.getItem("products"));
+let products = (storedProducts && storedProducts.length > 0) ? storedProducts : INITIAL_PRODUCTS;
+let comanda = JSON.parse(localStorage.getItem("comanda") || "[]");
+
+renderProducts();
+renderAdminList();
+updateComandaCount();
+
+// ================= REGISTRO DO SERVICE WORKER (PWA) =================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(registration => {
+        console.log('ServiceWorker registrado com sucesso: ', registration.scope);
+      })
+      .catch(err => {
+        console.log('Falha no registro do ServiceWorker: ', err);
+      });
+  });
+}
+
+document.getElementById("admin-icon").addEventListener("click", () => {
+  let senha = prompt("DIGITE A SENHA:");
+  if(senha==="1234") showModal('admin-modal');
+  else alert("SENHA INCORRETA!");
+});
+
+// ================= Funções Auxiliares =================
+function showModal(id){ document.getElementById(id).classList.add("show"); }
+function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+function showToast(msg){
+  let toast = document.getElementById("toast");
+  toast.innerText = msg;
+  toast.classList.add("show");
+  setTimeout(()=>{ toast.classList.remove("show"); },2000);
+}
+
+// ================= Produtos =================
+function saveProduct(editIndex){
+  let name=document.getElementById("p-name").value.trim();
+  let price=parseFloat(document.getElementById("p-price").value);
+  let category=document.getElementById("p-category").value;
+  if(!name||isNaN(price)){ alert("PREENCHA NOME E PREÇO CORRETAMENTE."); return; }
+  if(editIndex!==undefined) products[editIndex]={name,price,category};
+  else products.push({name,price,category});
+  // Salva no localStorage para persistir as alterações em tempo de execução
+  localStorage.setItem("products",JSON.stringify(products)); 
+  renderProducts(); renderAdminList(); closeAdminInputs();
+}
+
+function renderProducts(){
+  ["sanduiches","acompanhamentos","bebidas"].forEach(cat=>document.getElementById(cat).innerHTML="");
+  products.forEach((p,index)=>{
+    let div=document.createElement("div");
+    div.className="product";
+    div.innerHTML=`
+      <div class="product-info">
+        <strong>${p.name}</strong>
+        <p class="price">R$ ${p.price.toFixed(2)}</p>
+      </div>
+      <div class="product-controls">
+        <div class="qty-control">
+          <button onclick="changeQty(${index},-1)">-</button>
+          <span id="qty-${index}">1</span>
+          <button onclick="changeQty(${index},1)">+</button>
+        </div>
+        <button class="add-cart-btn" onclick="addToComanda(${index})">
+          ADICIONAR
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zM7.16 14.26L6.3 10H18v2H7.42l.74 2H18v-2H7.16zM5 6h2l3.6 7.59-1.35 2.44c-.18.32-.25.69-.19 1.05.13.69.8 1.19 1.51 1.19h9v-2H9.42c-.13 0-.25-.11-.25-.25l.03-.12L10.1 13h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49-1.78-1.04L5 6z"/>
+          </svg>
+        </button>
+      </div>
+    `;
+    document.getElementById(p.category).appendChild(div);
+  });
+}
+
+function changeQty(index,value){
+  let span=document.getElementById("qty-"+index);
+  let n=Math.max(1,parseInt(span.innerText)+value);
+  span.innerText=n;
+}
+
+function addToComanda(index){
+  let qty=parseInt(document.getElementById("qty-"+index).innerText);
+  let p=products[index];
+  let existe=comanda.find(item=>item.name===p.name);
+  if(existe) existe.qty+=qty; else comanda.push({name:p.name,qty,price:p.price});
+  updateComandaCount();
+  // Comanda também deve ser salva no localStorage para persistir entre aberturas e reaberturas
+  localStorage.setItem("comanda",JSON.stringify(comanda)); 
+  showToast(`${qty}X ${p.name} adicionado!`);
+  // Reseta o contador para 1 após adicionar
+  document.getElementById("qty-"+index).innerText = "1";
+}
+
+// ================= Comanda =================
+function updateComandaCount(){
+  let count=comanda.reduce((acc,cur)=>acc+cur.qty,0);
+  document.getElementById("comanda-count").innerText=count;
+}
+
+function openComanda(){ showModal('comanda-modal'); renderComandaList(); }
+function closeComanda(){ closeModal('comanda-modal'); }
+function limparComanda(){ 
+  if(confirm("DESEJA LIMPAR TODA A COMANDA?")){ 
+    comanda=[]; 
+    updateComandaCount(); 
+    renderComandaList(); 
+    document.getElementById("btn-fechar-comanda").disabled=true; 
+    localStorage.setItem("comanda",JSON.stringify(comanda)); 
+  } 
+}
+
+function renderComandaList(){
+  let list=document.getElementById("comanda-list");
+  if(comanda.length===0){ list.innerHTML="NENHUM ITEM NA COMANDA."; document.getElementById("btn-fechar-comanda").disabled=true; return; }
+  document.getElementById("btn-fechar-comanda").disabled=false;
+  list.innerHTML="";
+  comanda.forEach(item=>{
+    let div=document.createElement("div"); div.className="comanda-item";
+    let subtotal = (item.qty*item.price).toFixed(2);
+    div.innerHTML=`<span>${item.qty}X ${item.name}</span><span>R$ ${subtotal}</span>`;
+    list.appendChild(div);
+  });
+}
+
+function fecharComanda(){ closeComanda(); showModal('fechar-modal'); renderFecharList(); }
+
+function renderFecharList(){
+  let list = document.getElementById("fechar-list");
+  let totalArea = document.getElementById("fechar-total");
+  list.innerHTML = "";
+  if(comanda.length === 0){
+    list.innerHTML = "NENHUM ITEM NA COMANDA.";
+    totalArea.innerHTML = "";
+    return;
+  }
+  let total = 0;
+  comanda.forEach(item => {
+    let subtotal = item.qty * item.price;
+    total += subtotal;
+    let div = document.createElement("div");
+    div.className = "fechar-item";
+    div.innerHTML = `<span>${item.qty}X ${item.name}</span><span>R$ ${subtotal.toFixed(2)}</span>`;
+    list.appendChild(div);
+  });
+  totalArea.innerText = `TOTAL: R$ ${total.toFixed(2)}`;
+}
+
+function closeFechar(){ 
+  closeModal('fechar-modal'); 
+  comanda=[]; 
+  updateComandaCount(); 
+  localStorage.setItem("comanda",JSON.stringify(comanda)); 
+}
+
+function showReceipt(){
+  let content = document.getElementById("receipt-content");
+  let text = "🎫 CUPOM - JP HOUSE & BEER\n\n";
+  let total = 0;
+
+  // Listar itens
+  comanda.forEach(item=>{
+    let subtotal = item.qty*item.price;
+    total += subtotal;
+    text += `${item.qty}X ${item.name} - R$ ${subtotal.toFixed(2)}\n`;
+  });
+
+  // Adicionar taxa de garçom (na sequência dos itens, sem linha extra)
+  let taxa = total * 0.20;
+  let totalComTaxa = total + taxa;
+  text += `TAXA DAS GARÇONETES TOP (20%): R$ ${taxa.toFixed(2)}\n\n\n`; // duas linhas em branco após a taxa
+
+  // Total final
+  text += `TOTAL: R$ ${totalComTaxa.toFixed(2)}`;
+
+  content.innerText = text;
+  closeFechar();
+  showModal("receipt-modal");
+}
+
+
+function closeReceipt(){ closeModal("receipt-modal"); }
+
+// ================= Admin =================
+function renderAdminList(){
+  let list = document.getElementById("admin-list");
+  list.innerHTML = "";
+  products.forEach((p,index)=>{
+    let div = document.createElement("div");
+    div.className="admin-product";
+    div.innerHTML = `<span>${p.name} - R$ ${p.price.toFixed(2)}</span>
+      <button onclick="editProduct(${index})">EDITAR</button>
+      <button onclick="deleteProduct(${index})">EXCLUIR</button>`;
+    list.appendChild(div);
+  });
+}
+
+function editProduct(index){
+  let p = products[index];
+  document.getElementById("p-name").value = p.name;
+  document.getElementById("p-price").value = p.price;
+  document.getElementById("p-category").value = p.category;
+  // A chamada a saveProduct com um índice será feita manualmente pelo usuário após a edição
+  // NOTE: Eu removi o "saveProduct(index);" daqui, pois a edição deve ser salva pelo botão "SALVAR" do modal.
+}
+
+function deleteProduct(index){
+  if(confirm("DESEJA EXCLUIR ESTE PRODUTO?")){
+    products.splice(index,1);
+    // Persiste a exclusão
+    localStorage.setItem("products",JSON.stringify(products)); 
+    renderProducts(); renderAdminList();
+  }
+}
+
+function closeAdmin(){ closeModal("admin-modal"); }
+function closeAdminInputs(){ document.getElementById("p-name").value=""; document.getElementById("p-price").value=""; document.getElementById("p-category").value="sanduiches"; }
+
+// ================= Tabs =================
+function openTab(tabName){
+  document.querySelectorAll(".tab-content").forEach(div=>div.style.display="none");
+  document.querySelectorAll(".tabs button").forEach(btn=>btn.classList.remove("active"));
+  document.getElementById(tabName).style.display="grid";
+  // Usando event.currentTarget para garantir que a aba correta seja ativada
+  let target = event.currentTarget || document.querySelector(`.tabs button[onclick*="'${tabName}'"]`);
+  if(target) target.classList.add("active");
+}
+</script>
+</body>
+</html>
