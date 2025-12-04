@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<title>COMANDA DIGITAL - JP HOUSE & BEER</title>
+<title>JP HOUSE & BEER</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -47,13 +47,17 @@
     transition: background 0.3s;
   }
   .tabs button.active { background: #bbb; font-weight: bold; }
+  
+  /* Correção: Define que o conteúdo da aba deve ser escondido por padrão */
   .tab-content {
-    display: none;
+    display: none; 
     padding: 15px;
-    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 15px;
   }
+  
+  /* ... restante do CSS (não alterado) ... */
+
   .product {
     background: #fff;
     padding: 15px;
@@ -203,7 +207,7 @@
 </head>
 <body>
 <header>
-  🍔 COMANDA DIGITAL - JP HOUSE & BEER
+  🍔 JP HOUSE & BEER
   <span id="admin-icon" title="CADASTRO DE PRODUTOS">⚙️</span>
 </header>
 
@@ -260,8 +264,8 @@
     <input id="p-price" type="number" step="0.01" style="width: 100%" /><br /><br />
     <label>CATEGORIA:</label>
     <select id="p-category" style="width: 100%">
-      <option value="sanduiches">SANDUÍCHE</option>
-      <option value="acompanhamentos">ACOMPANHAMENTO</option>
+      <option value="sanduiches">SANDUÍCHES</option>
+      <option value="acompanhamentos">ACOMPANHAMENTOS</option>
       <option value="bebidas">BEBIDAS</option>
     </select>
     <br /><br />
@@ -274,7 +278,6 @@
 
 <script>
 // ================= LISTA DE PRODUTOS INICIAIS (EMBUTIDA) =================
-// Esta lista foi gerada com base na sua imagem (image_692aa4.png)
 const INITIAL_PRODUCTS = [
     { name: "SERTANEJO MODINHA", price: 4.99, category: "sanduiches" },
     { name: "COSTELA DESFIADA", price: 5.49, category: "sanduiches" },
@@ -282,12 +285,33 @@ const INITIAL_PRODUCTS = [
     { name: "MACAXEIRA FRITA - 100G", price: 1.99, category: "acompanhamentos" },
     { name: "COCA COLA ZERO - 350ML", price: 2.49, category: "bebidas" },
     { name: "GUARANA ZERO - 350ML", price: 2.49, category: "bebidas" },
+    { name: "HEINEKEN - 350ML", price: 2.99, category: "bebidas" },
 ];
 
-// Carrega os produtos: Verifica se há produtos válidos no localStorage. Se não houver (ou se estiver vazio), usa a lista INITIAL_PRODUCTS.
-let storedProducts = JSON.parse(localStorage.getItem("products"));
-let products = (storedProducts && storedProducts.length > 0) ? storedProducts : INITIAL_PRODUCTS;
+// Carrega as listas salvas (Comanda e Produtos)
+let storedProducts = JSON.parse(localStorage.getItem("products") || "[]");
 let comanda = JSON.parse(localStorage.getItem("comanda") || "[]");
+
+// ================= LÓGICA DE FUSÃO (MERGE) DE PRODUTOS =================
+const storedProductMap = new Map(storedProducts.map(p => [p.name, p]));
+let updatedProducts = [...storedProducts];
+
+INITIAL_PRODUCTS.forEach(initialP => {
+    // Se o item do código não existe na lista salva (pelo nome), adiciona-o.
+    if (!storedProductMap.has(initialP.name)) {
+        updatedProducts.push(initialP);
+    }
+    // OBS: Se você mudar o preço de um item existente no código, 
+    // a versão salva no localStorage (que pode ter sido alterada pelo Admin) será mantida,
+    // garantindo que as alterações do Admin não sejam perdidas.
+});
+
+// Define a lista de produtos principal com o resultado da fusão
+let products = updatedProducts; 
+
+// Salva a nova lista de produtos (fusão) de volta no localStorage
+localStorage.setItem("products", JSON.stringify(products)); 
+// ================= FIM DA LÓGICA DE FUSÃO =================
 
 renderProducts();
 renderAdminList();
@@ -458,7 +482,7 @@ function showReceipt(){
   // Adicionar taxa de garçom (na sequência dos itens, sem linha extra)
   let taxa = total * 0.20;
   let totalComTaxa = total + taxa;
-  text += `TAXA DAS GARÇONETES TOP (20%): R$ ${taxa.toFixed(2)}\n\n\n`; // duas linhas em branco após a taxa
+  text += `TAXA DAS GARÇONETES TOP: R$ ${taxa.toFixed(2)}\n\n\n`; // duas linhas em branco após a taxa
 
   // Total final
   text += `TOTAL: R$ ${totalComTaxa.toFixed(2)}`;
@@ -490,8 +514,7 @@ function editProduct(index){
   document.getElementById("p-name").value = p.name;
   document.getElementById("p-price").value = p.price;
   document.getElementById("p-category").value = p.category;
-  // A chamada a saveProduct com um índice será feita manualmente pelo usuário após a edição
-  // NOTE: Eu removi o "saveProduct(index);" daqui, pois a edição deve ser salva pelo botão "SALVAR" do modal.
+  // CORREÇÃO: Removido 'saveProduct(index);'. A edição deve ser salva manualmente pelo botão SALVAR.
 }
 
 function deleteProduct(index){
@@ -508,10 +531,15 @@ function closeAdminInputs(){ document.getElementById("p-name").value=""; documen
 
 // ================= Tabs =================
 function openTab(tabName){
+  // Esconde todas as abas
   document.querySelectorAll(".tab-content").forEach(div=>div.style.display="none");
+  // Remove o estado ativo de todos os botões
   document.querySelectorAll(".tabs button").forEach(btn=>btn.classList.remove("active"));
+  
+  // Exibe APENAS a aba selecionada no modo grid
   document.getElementById(tabName).style.display="grid";
-  // Usando event.currentTarget para garantir que a aba correta seja ativada
+  
+  // Ativa o botão da aba
   let target = event.currentTarget || document.querySelector(`.tabs button[onclick*="'${tabName}'"]`);
   if(target) target.classList.add("active");
 }

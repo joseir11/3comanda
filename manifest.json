@@ -1,6 +1,6 @@
 {
   "name": "Comanda JP House & Beer",
-  "short_name": "JP Comanda",
+  "short_name": "Comanda JP House & Beer",
   "description": "Comanda Digital para Evento JP House & Beer",
   "start_url": "./MENU.html",
   "display": "standalone",
