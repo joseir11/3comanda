@@ -27,12 +27,13 @@
     cursor: pointer;
     background: rgba(255,255,255,0);
 }
+#comanda { display: none; }
 </style>
 </head>
 <body>
 
 <section id="capa">
-    <a href="#comanda">
+    <a onclick="mostrarComanda()">
         <div class="menu-button"></div>
     </a>
 </section>
@@ -392,6 +393,14 @@ function openTab(tabName){
 }
 </script>
 </section>
+
+
+<script>
+function mostrarComanda() {
+    document.getElementById("comanda").style.display = "block";
+    document.getElementById("capa").style.display = "none";
+}
+</script>
 
 </body>
 </html>
