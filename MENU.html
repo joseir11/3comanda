@@ -1,39 +1,44 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JP HOUSE & BEER</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="theme-color" content="#111111">
 <style>
+body, html {
+  margin:0; padding:0; width:100%; height:100%;
+}
 #capa {
-    height: 100vh;
-    width: 100vw;
-    background-image: url('CAPA_MENU_1.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    position: relative;
+  width:100%; height:100vh;
+  background-image:url('CAPA_MENU_1.jpg');
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-color:#000;
+  position:relative;
 }
-.menu-button {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 180px;
-    height: 60px;
-    cursor: pointer;
-    background: rgba(255,255,255,0);
+#botao-menu {
+  position:absolute;
+  bottom:40px;
+  right:40px;
+  width:180px;
+  height:80px;
+  cursor:pointer;
 }
-#comanda { display: none; }
+#conteudo {
+  display:none;
+}
 </style>
 </head>
 <body>
 
+<div id="capa">
+  <div id="botao-menu" onclick="abrirComanda()"></div>
+</div>
+
+<div id="conteudo">
 <section id="capa">
-    <a onclick="mostrarComanda()">
+    <a href="#comanda">
         <div class="menu-button"></div>
     </a>
 </section>
@@ -393,12 +398,13 @@ function openTab(tabName){
 }
 </script>
 </section>
-
+</div>
 
 <script>
-function mostrarComanda() {
-    document.getElementById("comanda").style.display = "block";
-    document.getElementById("capa").style.display = "none";
+function abrirComanda(){
+  document.getElementById('capa').style.display='none';
+  document.getElementById('conteudo').style.display='block';
+  window.scrollTo(0,0);
 }
 </script>
 
