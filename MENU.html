@@ -70,37 +70,50 @@
     gap: 15px;
   }
   
-  .product {
+  
+.product {
     background: #fff;
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+    align-items: flex-start;
+    flex-wrap: nowrap;
     transition: transform 0.2s, box-shadow 0.2s;
-  }
+}
+
   .product:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
   }
-  .product-info {
-    max-width: 60%;
-  }
+  
+.product-info {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    text-align: left;
+}
+
   .product-info strong { display: block; margin-bottom: 5px; font-size: 16px; }
   .product-info .price { font-size: 14px; margin-bottom: 0; text-align: right; }
-  .product-controls {
+  
+.product-controls {
     display: flex;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: nowrap;
-  }
-  .qty-control {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    min-width: 120px;
+}
+
+  
+.qty-control {
+    margin-top: 8px;
     display: flex;
     align-items: center;
     gap: 8px;
-  }
+}
+
   .qty-control button {
     width: 32px;
     height: 32px;
@@ -206,8 +219,27 @@
     .qty-control button { width: 28px; height: 28px; font-size: 18px; }
     button.add-cart-btn { font-size: 14px; padding: 7px 12px; }
     #comanda-btn { padding: 10px 14px; font-size: 16px; }
-    .product-info { max-width: 100%; margin-bottom: 10px; }
-    .product { flex-wrap: wrap; gap: 10px; }
+    
+.product-info {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    text-align: left;
+}
+
+    
+.product {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
   }
 
   /* Admin */
