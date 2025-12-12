@@ -9,7 +9,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#111111">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
 <style>
   body {
     font-family: 'Roboto', Arial, sans-serif;
@@ -17,7 +16,6 @@
     background: #f6f6f6;
     text-transform: uppercase;
   }
-
   header {
     background: #111;
     color: #fff;
@@ -26,7 +24,7 @@
     font-size: 22px;
     position: relative;
   }
-
+  /* Estilos do ícone de Configurações (Admin) */
   #admin-icon {
     position: absolute;
     top: 15px;
@@ -37,18 +35,19 @@
     transition: opacity 0.3s;
   }
   #admin-icon:hover { opacity: 1; }
-
+  
+  /* ✅ NOVO CSS: Ícone de Atualizar/Limpar Cache */
   #refresh-icon {
     position: absolute;
     top: 15px;
-    left: 15px;
+    left: 15px; /* Posiciona à esquerda */
     font-size: 24px;
     cursor: pointer;
     opacity: 0.2;
     transition: opacity 0.3s;
   }
   #refresh-icon:hover { opacity: 1; }
-
+  
   .tabs {
     display: flex;
   }
@@ -61,70 +60,55 @@
     cursor: pointer;
     transition: background 0.3s;
   }
-  .tabs button.active {
-    background: #bbb;
-    font-weight: bold;
-  }
-
+  .tabs button.active { background: #bbb; font-weight: bold; }
+  
+  /* Garante que o conteúdo da aba correta é exibido como grid */
   .tab-content {
-    display: none;
+    display: none; 
     padding: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 15px;
   }
-
-  /* ========== LAYOUT CORRIGIDO ========== */
+  
   .product {
     background: #fff;
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .product-info {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    text-align: left;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    transition: transform 0.2s, box-shadow 0.2s;
   }
-
-  .product-info strong {
-    font-size: 18px;
+  .product:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
   }
-
-  .product-info .price {
-    font-size: 15px;
+  .product-info {
+    max-width: 60%;
   }
-
+  .product-info strong { display: block; margin-bottom: 5px; font-size: 16px; }
+  .product-info .price { font-size: 14px; margin-bottom: 0; text-align: right; }
   .product-controls {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 12px;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: nowrap;
   }
-
   .qty-control {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-
   .qty-control button {
     width: 32px;
     height: 32px;
     font-size: 20px;
     cursor: pointer;
+    user-select: none;
   }
-
-  .qty-control span {
-    min-width: 26px;
-    text-align: center;
-    font-size: 16px;
-  }
-
+  .qty-control span { min-width: 24px; text-align: center; font-size: 16px; }
   button.add-cart-btn {
     background: #111;
     color: white;
@@ -136,12 +120,11 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    user-select: none;
+    transition: background 0.3s;
   }
-
-  button.add-cart-btn:hover {
-    background: #333;
-  }
-
+  button.add-cart-btn:hover { background: #333; }
+  button.add-cart-btn svg { width: 20px; height: 20px; fill: white; }
   #comanda-btn {
     position: fixed;
     bottom: 20px;
@@ -153,16 +136,92 @@
     cursor: pointer;
   }
 
-  /* -------- modais, toast, admin, responsivo etc -------- */
-  /* (NÃO ALTEREI — tudo igual ao seu original) */
+  /* Modal comum */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .modal.show { display: flex; opacity: 1; }
+  .modal-content {
+    background: white;
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+    border-radius: 10px;
+    max-height: 90%;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-content .close-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  #receipt-content {
+    font-family: monospace;
+    white-space: pre-line;
+    border: 1px dashed #000;
+    padding: 10px;
+    background: #fff;
+    margin-bottom: 10px;
+  }
+  #comanda-list, #fechar-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+  .comanda-item, .fechar-item { display: flex; justify-content: space-between; font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+  .comanda-item span:first-child, .fechar-item span:first-child { font-weight: 600; }
+  .fechar-item span:last-child { min-width: 90px; text-align: right; }
+  #fechar-total { margin-top: 15px; font-weight: bold; font-size: 18px; text-align: right; }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: #111;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.5s;
+    z-index: 20;
+  }
+  #toast.show { opacity: 1; }
+
+  /* Responsividade */
+  @media (max-width: 600px) {
+    .tabs button { font-size: 16px; padding: 10px; }
+    .qty-control button { width: 28px; height: 28px; font-size: 18px; }
+    button.add-cart-btn { font-size: 14px; padding: 7px 12px; }
+    #comanda-btn { padding: 10px 14px; font-size: 16px; }
+    .product-info { max-width: 100%; margin-bottom: 10px; }
+    .product { flex-wrap: wrap; gap: 10px; }
+  }
+
+  /* Admin */
+  .admin-product { border-bottom: 1px solid #ccc; padding: 5px 0; display: flex; justify-content: space-between; align-items: center; }
+  .admin-product span { flex: 1; }
+  .admin-product button { margin-left: 5px; }
+  #comanda-modal button, #fechar-modal button, #admin-modal button, #receipt-modal button { margin-right: 8px; text-transform: uppercase; }
 </style>
 </head>
-
 <body>
 <header>
-  <span id="refresh-icon" onclick="clearCacheAndReload()">🔄</span>
+  <span id="refresh-icon" title="FORÇAR ATUALIZAÇÃO E LIMPAR CACHE" onclick="clearCacheAndReload()">🔄</span> 
   🍔 JP HOUSE & BEER
-  <span id="admin-icon">⚙️</span>
+  <span id="admin-icon" title="CADASTRO DE PRODUTOS">⚙️</span>
 </header>
 
 <div class="tabs">
@@ -179,10 +238,60 @@
 
 <div id="toast"></div>
 
-<!-- modais originais permanecem iguais... -->
+<div id="comanda-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeComanda()">✖️</span>
+    <h3>📋 COMANDA</h3>
+    <div id="comanda-list">NENHUM ITEM NA COMANDA.</div>
+    <button onclick="fecharComanda()" disabled id="btn-fechar-comanda">FECHAR COMANDA</button>
+    <button onclick="limparComanda()" id="btn-limpar-comanda">LIMPAR COMANDA</button>
+  </div>
+</div>
+
+<div id="fechar-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeFechar()">✖️</span>
+    <h3>🧾 SEU PEDIDO</h3>
+    <div id="fechar-list"></div>
+    <div id="fechar-total"></div>
+    <br />
+    <button onclick="showReceipt()">MOSTRAR CUPOM</button>
+  </div>
+</div>
+
+<div id="receipt-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeReceipt()">✖️</span>
+    <h3>🧾 CUPOM</h3>
+    <div id="receipt-content"></div>
+  </div>
+</div>
+
+<div id="admin-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeAdmin()">✖️</span>
+    <h3>CADASTRAR PRODUTO</h3>
+    <label>NOME:</label>
+    <input id="p-name" style="width: 100%" /><br /><br />
+    <label>PREÇO:</label>
+    <input id="p-price" type="number" step="0.01" style="width: 100%" /><br /><br />
+    <label>CATEGORIA:</label>
+    <select id="p-category" style="width: 100%">
+      <option value="sanduiches">SANDUÍCHE</option>
+      <option value="acompanhamentos">ACOMPANHAMENTO</option>
+      <option value="bebidas">BEBIDAS</option>
+    </select>
+    <br /><br />
+    <button onclick="saveProduct()">SALVAR</button>
+
+    <h3>PRODUTOS CADASTRADOS</h3>
+    <div id="admin-list"></div>
+  </div>
+</div>
 
 <script>
-/* ================== LISTA INICIAL ================== */
+// ================= LISTA DE PRODUTOS INICIAIS (EMBUTIDA) =================
+// Use esta lista para garantir que os produtos corretos sejam carregados.
 const INITIAL_PRODUCTS = [
     { name: "ADÃO E EVA", price: 4.99, category: "sanduiches" },
     { name: "SERTANEJO GOURMET", price: 4.49, category: "sanduiches" },
@@ -466,5 +575,4 @@ function openTab(tabName){
 </body>
 
 </html>
-
 
